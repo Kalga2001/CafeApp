@@ -1,91 +1,67 @@
-﻿using CafeApp.DAL.Context;
+﻿using CafeApp.BLL.Helpers;
+using CafeApp.DAL.Context;
 using CafeApp.DAL.Entity;
 using Microsoft.EntityFrameworkCore;
 
 namespace CafeApp
 {
     
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            Result();
-            Console.WriteLine("Please enter food: ");
-            string dish=Console.ReadLine();
-            Order(dish);
-
-            Console.WriteLine("Please choose cook 1-5 ");
-            int select = Convert.ToInt32(Console.ReadLine());
-
-                switch (select)
-                {
-                    case 1:
-                        Console.WriteLine("Please enter food: ");
-                        Order(dish);
-                        
-                        break;
-                    case 2:
-                        Console.WriteLine("Please enter food: ");
-                        Order(dish);
-                        break;
-                    case 3:
-                        Console.WriteLine("Please enter food: ");
-                        Order(dish);
-                        break;
-                    case 4:
-                        Console.WriteLine("Please enter food: ");
-                        Order(dish);
-                        break;
-                    case 5:
-                        Console.WriteLine("Please enter food: ");
-                        Order(dish);
-                        break;
-                }
-            
-        }
-
-        public static void Result()
-        {
-            using (CafeAppDbContext db = new CafeAppDbContext())
-            {
-                
-                var product = db.Dishes.Include(p => p.Ingredients).ToList();
-              
-                foreach (var p in product)
-                {
-                    Console.WriteLine("Dishes: {0} ", p.Name);
-                    Console.WriteLine("Description: {0} ", p.Description);
-                    foreach (var i in p.Ingredients)
-                    {
-                        Console.Write("Ingredients: {0} ", i.Name+",");
-                        Console.WriteLine();
-                    }
-                    Console.WriteLine("Price:{0} ", p.Price);
-                }
-
-            }
-        }
-
-       
-        public static void Order(string name)
+    public class Program
+    { 
+        public static void Main(string[] args)
         {
             using (var _context = new CafeAppDbContext())
             {
-                var dish = _context.Dishes.First(d => d.Name == name);
-
-                var cook = (from c in _context.Cooks
-                            where c.Dishes.DishesId==dish.DishesId   
-                                      select c).ToList();
-
-                foreach (var c in cook)
+                BussinessLogic logic = new BussinessLogic();
+                logic.Result();
+               
+                bool enter = true;
+                
+                while (enter)
                 {
-                    Console.WriteLine("Name:{0} , OrderCount: {1}", c.Name,c.OrderCount);
+                    Console.WriteLine("Please select..... ");
+                    Console.WriteLine("1.View free cooks: ");
+                    Console.WriteLine("2.Enter dishes: ");
+                    Console.WriteLine("3.Exit");
+                    Console.WriteLine("You enter: ");
+                    int select = 0;
+                    try
+                    {
+                            select = Convert.ToInt32(Console.ReadLine());
+                    }
+                    catch(Exception ex)
+                    {
+                        Console.WriteLine("Error: {0} , DateTime: {1}", ex.InnerException, DateTime.Now);  
+                    }
+
+                    switch (select)
+                    {
+                        case 1:
+                            logic.DisplayFreeCooks();
+                            break;
+                        case 2:
+                            Console.WriteLine("Please enter name: ");
+                            string cookName = Console.ReadLine();
+
+                            Console.WriteLine("Please enter food: ");
+                            string dish = Console.ReadLine();
+                            
+                            logic.OrderDish(dish,cookName);
+                            logic.UpdateOrders(cookName);
+                            break;
+                       
+                        case 3:
+                        default:
+                            enter = false;
+                            break;
+                    }
                 }
             }
+
         }
 
+      
+        //Выбираем блюдо -- по нему ищем повара у которого меньше заказов -- выбрали повара --обновили кол-во заказов --повторили операцию выбора
 
-
-       
     }
 }
